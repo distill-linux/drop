@@ -1,0 +1,24 @@
+cc = clang
+cflags = -Os -fno-asynchronous-unwind-tables -ffunction-sections -fdata-sections -Wall -Wextra -pedantic -Werror -std=c99 -Isrc
+ldflags = -Wl,--gc-sections -lz
+
+rule cc
+  command = $cc $cflags -c $in -o $out
+  description = CC $out
+
+rule link
+  command = $cc $ldflags $in -o $out && strip -s $out
+  description = LINK $out
+
+build src/main.o: cc src/main.c
+build src/index.o: cc src/index.c
+build src/db.o: cc src/db.c
+build src/extractor.o: cc src/extractor.c
+build src/port.o: cc src/port.c
+build src/sha256.o: cc src/sha256.c
+build src/spawn_util.o: cc src/spawn_util.c
+build src/tar.o: cc src/tar.c
+
+build drop: link src/main.o src/index.o src/db.o src/extractor.o src/port.o src/sha256.o src/spawn_util.o src/tar.o
+
+default drop

@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/void-linux/void-musl-full:latest
+    steps:
+      - name: Install dependencies
+        run: |
+          xbps-install -Syu
+          xbps-install -y samurai bmake clang lld llvm zlib-devel git
+
+      - uses: actions/checkout@v4
+
+      - name: Build with Samurai
+        run: samu -v
+
+      - name: Check binary size
+        run: ls -lh drop
