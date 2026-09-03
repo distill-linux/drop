@@ -124,9 +124,15 @@ int drop_repo_fetch_index(const char *repo_url, const char *cache_path, drop_rep
         int status = 0;
         int r = distill_spawn_capture_stdout(argv, NULL, NULL, &buf, &len, &status);
         if (r != 0 || status != 0 || !buf) {
-            fprintf(stderr, "drop: error fetching repository index from %s\n", url);
-            free(buf);
-            return -1;
+            /* Fallback to wget */
+            char *wargv[] = {"wget", "-qO-", url, NULL};
+            status = 0;
+            r = distill_spawn_capture_stdout(wargv, NULL, NULL, &buf, &len, &status);
+            if (r != 0 || status != 0 || !buf) {
+                fprintf(stderr, "drop: error fetching repository index from %s (tested curl, wget)\n", url);
+                free(buf);
+                return -1;
+            }
         }
 
         if (cache_path) {

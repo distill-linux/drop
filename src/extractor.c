@@ -108,10 +108,15 @@ int drop_install_remote_url(const char *url, const char *target_prefix,
     char *argv[] = {"curl", "-sSL", (char *)url, NULL};
     pid_t pid = 0;
     int err = distill_spawn(argv, NULL, NULL, -1, pipefd[1], -1, &pid);
+    if (err != 0) {
+        /* Fallback to wget */
+        char *wargv[] = {"wget", "-qO-", (char *)url, NULL};
+        err = distill_spawn(wargv, NULL, NULL, -1, pipefd[1], -1, &pid);
+    }
     close(pipefd[1]);
     if (err != 0) {
         close(pipefd[0]);
-        fprintf(stderr, "drop: failed to spawn curl for '%s': %s\n", url, strerror(err));
+        fprintf(stderr, "drop: failed to spawn curl or wget for '%s': %s\n", url, strerror(err));
         return -1;
     }
 
